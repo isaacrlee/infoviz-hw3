@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>NBA Shots</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+      svg {
+        width: 480px;
+        height: 480px;
+      }
+      #court {
+        position: fixed;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+      }
+      #filters {
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="court"></div>
+    <div id="filters">
+      <select id="inds">
+        <option value="Golden State Warriors">Warriors</option>
+        <option value="Miami Heat">Heat</option>
+        <option value="Los Angeles Lakers">Lakers</option>
+      </select>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
