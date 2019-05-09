@@ -20,16 +20,90 @@ const shot_yScale = d3
 
 addShots();
 
+function getAllPlayers() {
+  document.getElementById("players").innerHTML = ""; //clear previous team
+
+  var players=[]
+  full_data.forEach(function(d) {
+    if (!players.includes(d.name)) {
+      players.push(d.name);
+    }
+
+  });
+  players.sort();
+  players.unshift("All Team Players");
+  var playerSelect=document.getElementById("players");
+  playerSelect.innerHTML = ""; //clear previous team
+  players.forEach(function(d) {
+    var option = document.createElement("option");
+    option.text = d;
+    playerSelect.add(option);
+  });
+
+}
+
 d3.select("#inds").on("change", function() {
   var sect = document.getElementById("inds");
   var section = sect.options[sect.selectedIndex].value;
   console.log(section);
-  var data = full_data.filter(function(d) {
-    if (d.teamName === section) {
-      //console.log(d);
+  if (section=="All") {
+
+    var data= full_data;
+    //getAllPlayers(); if want to have every player available for All Teams options??
+    document.getElementById("players").innerHTML = ""; //clear previous team
+
+  }
+  else {
+    var data = full_data.filter(function(d) {
+      if (d.teamName === section) {
+        return d;
+      }
+    });
+    //populate player selection
+    var players=[]
+    data.forEach(function(d) {
+      if (!players.includes(d.name)) {
+        players.push(d.name);
+      }
+
+    });
+    players.sort();
+    players.unshift("All Team Players");
+    var playerSelect=document.getElementById("players");
+    playerSelect.innerHTML = ""; //clear previous team
+    players.forEach(function(d) {
+      var option = document.createElement("option");
+      option.text = d;
+      playerSelect.add(option);
+    });
+  }
+
+  renderShots(data);
+});
+
+d3.select("#players").on("change", function() {
+  var sect = document.getElementById("players");
+  var section = sect.options[sect.selectedIndex].value;
+  var team = document.getElementById("inds");
+  var selected_team = team.options[team.selectedIndex].value;
+  var team_data=full_data.filter(function(d) {
+    if (d.teamName === selected_team) {
       return d;
     }
   });
+  if (section=="All Team Players") {
+
+    var data= team_data;
+  }
+  else {
+    var data = team_data.filter(function(d) {
+      if (d.name === section) {
+        //console.log(d);
+        return d;
+      }
+    });
+  }
+
   renderShots(data);
 });
 
@@ -53,7 +127,6 @@ function addShots() {
 
 function renderShots(data) {
   var shots = shot_g.selectAll("circle").data(data);
-
   shots
     .enter()
     .append("circle")
@@ -61,7 +134,8 @@ function renderShots(data) {
     .attr("cx", d => shot_xScale(d.x))
     .attr("cy", d => shot_yScale(d.y))
     .attr("r", 5)
-    .attr("fill", d => (d.shotMadeFlag == 1 ? "red" : "blue"));
+    .attr("stroke", d => (d.shotMadeFlag == 1 ? "red" : "blue"))
+    .attr("fill", "none");
 
   shots.exit().remove();
 }
