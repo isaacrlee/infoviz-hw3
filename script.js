@@ -107,6 +107,12 @@ d3.select("#players").on("change", function() {
   renderShots(data);
 });
 
+
+
+
+var hexbin = d3.hexbin();
+
+
 function addShots() {
   // Shots
   d3.csv("nba_savant.csv", function(d) {
@@ -130,14 +136,18 @@ function renderShots(data) {
   shots
     .enter()
     .append("circle")
-    .merge(shots)
+    .merge(shots).style("opacity", 0)
     .attr("cx", d => shot_xScale(d.x))
     .attr("cy", d => shot_yScale(d.y))
     .attr("r", 5)
     .attr("stroke", d => (d.shotMadeFlag == 1 ? "red" : "blue"))
-    .attr("fill", "none");
+    .attr("fill", "none")
+    .transition()
+    .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
 
-  shots.exit().remove();
+  shots.exit().transition()
+      .style("opacity", 0).duration(1000)
+      .remove();
 }
 
 function draw_court() {
