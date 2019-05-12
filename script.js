@@ -112,6 +112,10 @@ d3.select("#players").on("change", function() {
 
 var hexbin = d3.hexbin();
 
+var div = d3.select("body").append("div")
+.attr("class", "tooltip")
+.style("opacity", 0);
+
 
 function addShots() {
   // Shots
@@ -123,7 +127,8 @@ function addShots() {
       actionType: d.action_type,
       shotType: d.shot_type,
       x: d.x,
-      y: d.y
+      y: d.y,
+      date: d.game_date
     };
   }).then(function(d) {
     full_data = d;
@@ -142,8 +147,28 @@ function renderShots(data) {
     .attr("r", 5)
     .attr("stroke", d => (d.shotMadeFlag == 1 ? "red" : "blue"))
     .attr("fill", "none")
-    .transition()
-    .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
+    // .transition()
+    // .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
+    .on("mouseover", function(d) {
+
+    console.log("mouseover");
+      div.transition()
+      .duration(100)
+      .style("opacity", .9);
+      div.html("Player: "+d.name+"<br>Shot Type: "+d.actionType+"<br>Date: "+d.date)
+      .style("left", (d3.event.pageX ) + "px")
+      .style("top", (d3.event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+      console.log("mouseout");
+        div.transition()
+        .duration(500)
+        .style("opacity", 0);
+      })
+      .transition()
+      .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
+
+
 
   shots.exit().transition()
       .style("opacity", 0).duration(1000)
