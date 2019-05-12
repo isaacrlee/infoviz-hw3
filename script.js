@@ -20,6 +20,7 @@ const shot_yScale = d3
 
 addShots();
 
+
 function getAllPlayers() {
   document.getElementById("players").innerHTML = ""; //clear previous team
 
@@ -77,8 +78,9 @@ d3.select("#inds").on("change", function() {
       playerSelect.add(option);
     });
   }
+  calcHex(data);
 
-  renderShots(data);
+  //renderShots(data);
 });
 
 d3.select("#players").on("change", function() {
@@ -103,14 +105,14 @@ d3.select("#players").on("change", function() {
       }
     });
   }
+  calcHex(data);
 
-  renderShots(data);
+  //renderShots(data);
 });
 
 
 
 
-var hexbin = d3.hexbin();
 
 var div = d3.select("body").append("div")
 .attr("class", "tooltip")
@@ -128,13 +130,97 @@ function addShots() {
       shotType: d.shot_type,
       x: d.x,
       y: d.y,
-      date: d.game_date
+      date: d.game_date,
+      attempts: 1
     };
   }).then(function(d) {
     full_data = d;
-    renderShots(full_data);
+
+    //renderShots(full_data);
+    //calcHex(full_data);
   });
 }
+
+var hexbin = d3.hexbin();
+var yScale = d3.scaleLinear().domain([0, 47]).rangeRound([47, 0]);
+
+function calcHex(data) {
+  var toolTips = false,
+        hexbin = d3.hexbin()
+                .radius(1.2)
+                .x(function(d) { return d.x; }) // accessing the x, y coords from the nested json key
+                .y(function(d) { return yScale(d.y); });
+
+  var coll = d3.nest()
+  .key(function(d) {return [d.x, d.y]; })
+  .rollup(function(v){return{
+      made: d3.sum(v, function(d) {return d.shotMadeFlag}),
+      //attempts: d3.sum(v, function(d){return d.attempts}),
+      attempts: v.length,
+      //shootingPercentage:  d3.sum(v, function(d) {return d.shotMadeFlag})/d3.sum(v, function(d){return d.attempts}),
+      shootingPercentage:  d3.sum(v, function(d) {return d.shotMadeFlag})/(v.length)
+  }})
+  .entries(data);
+
+  var finalData = [];
+  coll.forEach(function(a){
+    a.key = JSON.parse("[" + a.key + "]");
+  });
+
+
+
+  var hexBinCoords=hexbin(coll).map(getHexBinShootingStats);
+  renderHex(coll);
+
+
+
+}
+function getHexBinShootingStats (data,index) {
+        var attempts = d3.sum(data, function(d) { return d.value.attempts; })
+        var makes = d3.sum(data, function(d) { return d.value.made; })
+        var shootingPercentage = makes/attempts;
+        data.shootingPercentage = shootingPercentage;
+        data.attempts = attempts;
+        data.makes = makes;
+        return data;
+};
+
+function renderHex(coords) {
+  var hexRadiusValues = [5, 7, 10],
+        hexMinShotThreshold = 1,
+        hexRadiusScale = d3.scaleQuantize().domain([0, 2]).range(hexRadiusValues);
+  var heatScale = d3.scaleQuantize().domain([0, 1]).range(['#5458A2', '#6689BB', '#FADC97', '#F08460', '#B02B48']);
+  var shots = shot_g.selectAll(".hex").data(coords, function(d){return d.key; });
+
+  shots
+    .enter()
+    .append("path").attr("class","hex").merge(shots)
+    .attr("transform", function(d) { return "translate(" + shot_xScale(d.key[0]) + "," + shot_yScale(d.key[1]) + ")"; })
+    .attr("d", hexbin.hexagon(0))
+    .on('mouseover', function(d) { if (toolTips) {tool_tip.show(d);} })
+    .on('mouseout', function(d) { if (toolTips) {tool_tip.hide(d);} })
+    .transition().duration(1000)
+    .attr("d", function(d) {
+                if (d.value.attempts >= hexMinShotThreshold) {
+                    if (d.value.made <= 2){
+                        return hexbin.hexagon(hexRadiusScale(0));
+                    }
+                    else if (2 < d.value.made && d.value.made <= 5){
+                        return hexbin.hexagon(hexRadiusScale(1));
+                    }
+                    else {
+                        return hexbin.hexagon(hexRadiusScale(2));
+                    }
+                }
+            })
+    .style("fill", function(d) { return heatScale(d.value.shootingPercentage); });
+
+    shots.exit()
+      .transition().style("opacity", 0)//.duration(1000)
+      .attr("d", hexbin.hexagon(0))
+      .remove();
+}
+
 
 function renderShots(data) {
   var shots = shot_g.selectAll("circle").data(data);
@@ -151,7 +237,6 @@ function renderShots(data) {
     // .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
     .on("mouseover", function(d) {
 
-    console.log("mouseover");
       div.transition()
       .duration(100)
       .style("opacity", .9);
@@ -160,7 +245,6 @@ function renderShots(data) {
       .style("top", (d3.event.pageY - 28) + "px");
     })
     .on("mouseout", function(d) {
-      console.log("mouseout");
         div.transition()
         .duration(500)
         .style("opacity", 0);
