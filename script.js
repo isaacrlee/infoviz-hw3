@@ -7,6 +7,9 @@ const innerHeight = height - margin.top - margin.bottom;
 var court = draw_court();
 var full_data; // full data
 var shot_g = court.append("g");
+var current_data;
+
+var show_type="plot";
 
 const shot_xScale = d3
   .scaleLinear()
@@ -19,6 +22,26 @@ const shot_yScale = d3
   .range([margin.top, innerHeight]);
 
 addShots();
+
+
+d3.select("#form").on("change", function() {
+  var radios = document.querySelectorAll('input[type=radio][name="type"]');
+  if (radios[0].checked) {
+    show_type=radios[0].value;
+    console.log(radios[0].value);
+  }
+  else {
+    show_type=radios[1].value;
+    console.log(radios[1].value);
+  }
+  if (show_type=="plot") {
+    renderShots(current_data);
+  }
+  else {
+    calcHex(current_data);
+  }
+});
+
 
 
 function getAllPlayers() {
@@ -78,9 +101,16 @@ d3.select("#inds").on("change", function() {
       playerSelect.add(option);
     });
   }
-  calcHex(data);
+  current_data=data;
+  if (show_type=="plot") {
+    renderShots(data);
+  }
+  else {
+    calcHex(data);
+  }
 
-  //renderShots(data);
+
+
 });
 
 d3.select("#players").on("change", function() {
@@ -96,6 +126,7 @@ d3.select("#players").on("change", function() {
   if (section=="All Team Players") {
 
     var data= team_data;
+
   }
   else {
     var data = team_data.filter(function(d) {
@@ -105,9 +136,14 @@ d3.select("#players").on("change", function() {
       }
     });
   }
-  calcHex(data);
+  current_data=data;
 
-  //renderShots(data);
+  if (show_type=="plot") {
+    renderShots(data);
+  }
+  else {
+    calcHex(data);
+  }
 });
 
 
@@ -135,9 +171,14 @@ function addShots() {
     };
   }).then(function(d) {
     full_data = d;
+    current_data=full_data;
 
-    //renderShots(full_data);
-    //calcHex(full_data);
+    if (show_type=="plot") {
+      renderShots(full_data);
+    }
+    else {
+      calcHex(full_data);
+    }
   });
 }
 
@@ -186,15 +227,18 @@ function getHexBinShootingStats (data,index) {
 };
 
 function renderHex(coords) {
+  shot_g.selectAll("circle").transition()
+      .style("opacity", 0).duration(1000).remove();
+
   var hexRadiusValues = [5, 7, 10],
         hexMinShotThreshold = 1,
         hexRadiusScale = d3.scaleQuantize().domain([0, 2]).range(hexRadiusValues);
   var heatScale = d3.scaleQuantize().domain([0, 1]).range(['#5458A2', '#6689BB', '#FADC97', '#F08460', '#B02B48']);
-  var shots = shot_g.selectAll(".hex").data(coords, function(d){return d.key; });
+  var shots = shot_g.selectAll(".shape").data(coords, function(d){return d.key; });
 
   shots
     .enter()
-    .append("path").attr("class","hex").merge(shots)
+    .append("path").attr("class","shape").merge(shots)
     .attr("transform", function(d) { return "translate(" + shot_xScale(d.key[0]) + "," + shot_yScale(d.key[1]) + ")"; })
     .attr("d", hexbin.hexagon(0))
     .on('mouseover', function(d) { if (toolTips) {tool_tip.show(d);} })
@@ -223,6 +267,8 @@ function renderHex(coords) {
 
 
 function renderShots(data) {
+  shot_g.selectAll(".shape").transition()
+      .style("opacity", 0).duration(1000).remove();
   var shots = shot_g.selectAll("circle").data(data);
   shots
     .enter()
@@ -255,7 +301,7 @@ function renderShots(data) {
 
 
   shots.exit().transition()
-      .style("opacity", 0).duration(1000)
+      .style("opacity", 0).duration(1000).attr("d", hexbin.hexagon(0))
       .remove();
 }
 

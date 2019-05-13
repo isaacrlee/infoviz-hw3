@@ -25,10 +25,15 @@
         position: relative;
         top: 500px;
       }
+      #form {
+        position: relative;
+        top: 550px;
+      }
     </style>
   </head>
 
   <body>
+
     <div id="court"></div>
     <div id="filters">
       <select id="inds">
@@ -53,6 +58,11 @@
       <select id="players">
       </select>
     </div>
+    <form action="" id="form">
+      <input type="radio" name="type" value="plot" checked> Shot Plot<br>
+      <input type="radio" name="type" value="hex"> Hex Bin<br>
+    </form>
+
 
     <script src="script.js"></script>
   </body>
