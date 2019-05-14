@@ -1,41 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>NBA Shots</title>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
-    <script src="https://d3js.org/d3-transition.v1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.10.0/math.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
 
-    <style>
-      svg {
-        width: 480px;
-        height: 480px;
-      }
-      #court {
-        position: fixed;
-        left: 0px;
-        right: 0px;
-        top: 0px;
-        bottom: 0px;
-      }
-      #filters {
-        position: relative;
-        top: 500px;
-      }
-      #form {
-        position: relative;
-        top: 550px;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="utf-8" />
+  <title>NBA Shots</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
+  <script src="https://d3js.org/d3-transition.v1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.10.0/math.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
 
-  <body>
+</head>
 
-    <div id="court"></div>
-    <div id="filters">
+<body>
+
+  <h1 style="text-align: center">2018 NBA Playoff Shot Chart</h1>
+  <div style="text-align: center">
+    <form action="" id="form" style="display: inline-block">
+      <input type="radio" name="type" value="plot" checked> Shot Plot<br>
+      <input type="radio" name="type" value="hex"> Hex Bin<br>
+    </form>
+    <div id="filters" style="display: inline-block">
       <select id="inds">
         <option value="All">All teams</option>
         <option value="Milwaukee Bucks">Bucks</option>
@@ -52,18 +37,19 @@
         <option value="Minnesota Timberwolves">Timberwolves</option>
         <option value="Portland Trail Blazers">Trail Blazers</option>
         <option value="Golden State Warriors">Warriors</option>
-        <option value="Washington Wizards">Washington Wizards</option>
+        <option value="Washington Wizards">Wizards</option>
         <option value="Philadelphia 76ers">76ers</option>
       </select>
       <select id="players">
       </select>
     </div>
-    <form action="" id="form">
-      <input type="radio" name="type" value="plot" checked> Shot Plot<br>
-      <input type="radio" name="type" value="hex"> Hex Bin<br>
-    </form>
+  </div>
 
+  <div style="text-align: center">
+    <div id="court"></div>
+  </div>
 
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
+
 </html>

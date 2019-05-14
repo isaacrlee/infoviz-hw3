@@ -9,7 +9,7 @@ var full_data; // full data
 var shot_g = court.append("g");
 var current_data;
 
-var show_type="plot";
+var show_type = "plot";
 
 const shot_xScale = d3
   .scaleLinear()
@@ -24,17 +24,17 @@ const shot_yScale = d3
 addShots();
 
 
-d3.select("#form").on("change", function() {
+d3.select("#form").on("change", function () {
   var radios = document.querySelectorAll('input[type=radio][name="type"]');
   if (radios[0].checked) {
-    show_type=radios[0].value;
+    show_type = radios[0].value;
     console.log(radios[0].value);
   }
   else {
-    show_type=radios[1].value;
+    show_type = radios[1].value;
     console.log(radios[1].value);
   }
-  if (show_type=="plot") {
+  if (show_type == "plot") {
     renderShots(current_data);
   }
   else {
@@ -47,8 +47,8 @@ d3.select("#form").on("change", function() {
 function getAllPlayers() {
   document.getElementById("players").innerHTML = ""; //clear previous team
 
-  var players=[]
-  full_data.forEach(function(d) {
+  var players = []
+  full_data.forEach(function (d) {
     if (!players.includes(d.name)) {
       players.push(d.name);
     }
@@ -56,9 +56,9 @@ function getAllPlayers() {
   });
   players.sort();
   players.unshift("All Team Players");
-  var playerSelect=document.getElementById("players");
+  var playerSelect = document.getElementById("players");
   playerSelect.innerHTML = ""; //clear previous team
-  players.forEach(function(d) {
+  players.forEach(function (d) {
     var option = document.createElement("option");
     option.text = d;
     playerSelect.add(option);
@@ -66,26 +66,26 @@ function getAllPlayers() {
 
 }
 
-d3.select("#inds").on("change", function() {
+d3.select("#inds").on("change", function () {
   var sect = document.getElementById("inds");
   var section = sect.options[sect.selectedIndex].value;
   console.log(section);
-  if (section=="All") {
+  if (section == "All") {
 
-    var data= full_data;
+    var data = full_data;
     //getAllPlayers(); if want to have every player available for All Teams options??
     document.getElementById("players").innerHTML = ""; //clear previous team
 
   }
   else {
-    var data = full_data.filter(function(d) {
+    var data = full_data.filter(function (d) {
       if (d.teamName === section) {
         return d;
       }
     });
     //populate player selection
-    var players=[]
-    data.forEach(function(d) {
+    var players = []
+    data.forEach(function (d) {
       if (!players.includes(d.name)) {
         players.push(d.name);
       }
@@ -93,16 +93,16 @@ d3.select("#inds").on("change", function() {
     });
     players.sort();
     players.unshift("All Team Players");
-    var playerSelect=document.getElementById("players");
+    var playerSelect = document.getElementById("players");
     playerSelect.innerHTML = ""; //clear previous team
-    players.forEach(function(d) {
+    players.forEach(function (d) {
       var option = document.createElement("option");
       option.text = d;
       playerSelect.add(option);
     });
   }
-  current_data=data;
-  if (show_type=="plot") {
+  current_data = data;
+  if (show_type == "plot") {
     renderShots(data);
   }
   else {
@@ -113,32 +113,32 @@ d3.select("#inds").on("change", function() {
 
 });
 
-d3.select("#players").on("change", function() {
+d3.select("#players").on("change", function () {
   var sect = document.getElementById("players");
   var section = sect.options[sect.selectedIndex].value;
   var team = document.getElementById("inds");
   var selected_team = team.options[team.selectedIndex].value;
-  var team_data=full_data.filter(function(d) {
+  var team_data = full_data.filter(function (d) {
     if (d.teamName === selected_team) {
       return d;
     }
   });
-  if (section=="All Team Players") {
+  if (section == "All Team Players") {
 
-    var data= team_data;
+    var data = team_data;
 
   }
   else {
-    var data = team_data.filter(function(d) {
+    var data = team_data.filter(function (d) {
       if (d.name === section) {
         //console.log(d);
         return d;
       }
     });
   }
-  current_data=data;
+  current_data = data;
 
-  if (show_type=="plot") {
+  if (show_type == "plot") {
     renderShots(data);
   }
   else {
@@ -151,13 +151,13 @@ d3.select("#players").on("change", function() {
 
 
 var div = d3.select("body").append("div")
-.attr("class", "tooltip")
-.style("opacity", 0);
+  .attr("class", "tooltip")
+  .style("opacity", 0);
 
 
 function addShots() {
   // Shots
-  d3.csv("nba_savant.csv", function(d) {
+  d3.csv("nba_savant.csv", function (d) {
     return {
       name: d.name,
       teamName: d.team_name,
@@ -169,11 +169,11 @@ function addShots() {
       date: d.game_date,
       attempts: 1
     };
-  }).then(function(d) {
+  }).then(function (d) {
     full_data = d;
-    current_data=full_data;
+    current_data = full_data;
 
-    if (show_type=="plot") {
+    if (show_type == "plot") {
       renderShots(full_data);
     }
     else {
@@ -186,89 +186,157 @@ var hexbin = d3.hexbin();
 var yScale = d3.scaleLinear().domain([0, 47]).rangeRound([47, 0]);
 
 function calcHex(data) {
-  var toolTips = false,
-        hexbin = d3.hexbin()
-                .radius(1.2)
-                .x(function(d) { return d.x; }) // accessing the x, y coords from the nested json key
-                .y(function(d) { return yScale(d.y); });
-
+  var hexbin = d3.hexbin()
+    .radius(1.2)
+    .x(function (d) { return d.x; }) // accessing the x, y coords from the nested json key
+    .y(function (d) { return yScale(d.y); });
   var coll = d3.nest()
-  .key(function(d) {return [d.x, d.y]; })
-  .rollup(function(v){return{
-      made: d3.sum(v, function(d) {return d.shotMadeFlag}),
-      //attempts: d3.sum(v, function(d){return d.attempts}),
-      attempts: v.length,
-      //shootingPercentage:  d3.sum(v, function(d) {return d.shotMadeFlag})/d3.sum(v, function(d){return d.attempts}),
-      shootingPercentage:  d3.sum(v, function(d) {return d.shotMadeFlag})/(v.length)
-  }})
-  .entries(data);
+    .key(function (d) { return [d.x, d.y]; })
+    .rollup(function (v) {
+      return {
+        made: d3.sum(v, function (d) { return d.shotMadeFlag }),
+        //attempts: d3.sum(v, function(d){return d.attempts}),
+        attempts: v.length,
+        //shootingPercentage:  d3.sum(v, function(d) {return d.shotMadeFlag})/d3.sum(v, function(d){return d.attempts}),
+        shootingPercentage: d3.sum(v, function (d) { return d.shotMadeFlag }) / (v.length)
+      }
+    })
+    .entries(data);
 
   var finalData = [];
-  coll.forEach(function(a){
+  coll.forEach(function (a) {
     a.key = JSON.parse("[" + a.key + "]");
   });
 
+  console.log(coll);
 
-
-  var hexBinCoords=hexbin(coll).map(getHexBinShootingStats);
+  var hexBinCoords = hexbin(coll).map(getHexBinShootingStats);
   renderHex(coll);
 
 
 
 }
-function getHexBinShootingStats (data,index) {
-        var attempts = d3.sum(data, function(d) { return d.value.attempts; })
-        var makes = d3.sum(data, function(d) { return d.value.made; })
-        var shootingPercentage = makes/attempts;
-        data.shootingPercentage = shootingPercentage;
-        data.attempts = attempts;
-        data.makes = makes;
-        return data;
+function getHexBinShootingStats(data, index) {
+  var attempts = d3.sum(data, function (d) { return d.value.attempts; })
+  var makes = d3.sum(data, function (d) { return d.value.made; })
+  var shootingPercentage = makes / attempts;
+  data.shootingPercentage = shootingPercentage;
+  data.attempts = attempts;
+  data.makes = makes;
+  return data;
 };
 
 function renderHex(coords) {
+  d3.selectAll('.legend').transition()
+    .style("opacity", 0).duration(1000).remove();
   shot_g.selectAll("circle").transition()
-      .style("opacity", 0).duration(1000).remove();
+    .style("opacity", 0).duration(1000).remove();
 
   var hexRadiusValues = [5, 7, 10],
-        hexMinShotThreshold = 1,
-        hexRadiusScale = d3.scaleQuantize().domain([0, 2]).range(hexRadiusValues);
+    hexMinShotThreshold = 1,
+    hexRadiusScale = d3.scaleQuantize().domain([0, 2]).range(hexRadiusValues);
   var heatScale = d3.scaleQuantize().domain([0, 1]).range(['#5458A2', '#6689BB', '#FADC97', '#F08460', '#B02B48']);
-  var shots = shot_g.selectAll(".shape").data(coords, function(d){return d.key; });
+  var shots = shot_g.selectAll(".shape").data(coords, function (d) { return d.key; });
 
   shots
     .enter()
-    .append("path").attr("class","shape").merge(shots)
-    .attr("transform", function(d) { return "translate(" + shot_xScale(d.key[0]) + "," + shot_yScale(d.key[1]) + ")"; })
+    .append("path").attr("class", "shape").merge(shots)
+    .attr("transform", function (d) { return "translate(" + shot_xScale(d.key[0]) + "," + shot_yScale(d.key[1]) + ")"; })
     .attr("d", hexbin.hexagon(0))
-    .on('mouseover', function(d) { if (toolTips) {tool_tip.show(d);} })
-    .on('mouseout', function(d) { if (toolTips) {tool_tip.hide(d);} })
-    .transition().duration(1000)
-    .attr("d", function(d) {
-                if (d.value.attempts >= hexMinShotThreshold) {
-                    if (d.value.made <= 2){
-                        return hexbin.hexagon(hexRadiusScale(0));
-                    }
-                    else if (2 < d.value.made && d.value.made <= 5){
-                        return hexbin.hexagon(hexRadiusScale(1));
-                    }
-                    else {
-                        return hexbin.hexagon(hexRadiusScale(2));
-                    }
-                }
-            })
-    .style("fill", function(d) { return heatScale(d.value.shootingPercentage); });
+    .on("mouseover", function (d) {
 
-    shots.exit()
-      .transition().style("opacity", 0)//.duration(1000)
-      .attr("d", hexbin.hexagon(0))
-      .remove();
+      div.transition()
+        .duration(100)
+        .style("opacity", .9);
+      div.html("Made: " + d.value.made + "<br>Attempts: " + d.value.attempts + "<br>Shot Percentage: " + (d.value.shootingPercentage * 100).toFixed(2) + "%")
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+    })
+    .on("mouseout", function (d) {
+      div.transition()
+        .duration(500)
+        .style("opacity", 0);
+    })
+    .transition().duration(1000)
+    .attr("d", function (d) {
+      if (d.value.attempts >= hexMinShotThreshold) {
+        if (d.value.made <= 2) {
+          return hexbin.hexagon(hexRadiusScale(0));
+        }
+        else if (2 < d.value.made && d.value.made <= 5) {
+          return hexbin.hexagon(hexRadiusScale(1));
+        }
+        else {
+          return hexbin.hexagon(hexRadiusScale(2));
+        }
+      }
+    })
+    .style("fill", function (d) { return heatScale(d.value.shootingPercentage); });
+
+  shots.exit()
+    .transition().style("opacity", 0)//.duration(1000)
+    .attr("d", hexbin.hexagon(0))
+    .remove();
+  var efficiencyLegend = d3.select('court').append("svg").classed('legend', true);
+
+  efficiencyLegend.selectAll("text").style("fill", "black");
+
+  efficiencyLegend.append("text")
+    .classed('legend-text', true)
+    .attr("x", 60)
+    .attr("y", 80)
+    .attr("text-anchor", "middle")
+    .text("Frequency").style("font-size", "15px");
+  efficiencyLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 50)
+    .attr("y", 60)
+    .attr("text-anchor", "end")
+    .text("low").style("font-size", "10px");
+  efficiencyLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 70)
+    .attr("y", 60)
+    .attr("text-anchor", "start")
+    .text("high").style("font-size", "10px");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(40,40)");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(7)).attr("transform", "translate(57,40)");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(10)).attr("transform", "translate(80,40)");
+  efficiencyLegend.selectAll("text").style("fill", "black");
+  efficiencyLegend.selectAll("path").style("fill", "grey");
+
+  efficiencyLegend.append("text")
+    .classed('legend-text', true)
+    .attr("x", 60)
+    .attr("y", 145)
+    .attr("text-anchor", "middle")
+    .text("Efficiency").style("font-size", "15px");
+  efficiencyLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 50)
+    .attr("y", 125)
+    .attr("text-anchor", "end")
+    .text("<avg").style("font-size", "10px");
+  efficiencyLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 70)
+    .attr("y", 125)
+    .attr("text-anchor", "start")
+    .text(">avg").style("font-size", "10px");
+
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(40,110)").style("fill", "#5458A2");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(50,110)").style("fill", '#6689BB');
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(60,110)").style("fill", "#FADC97");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(70,110)").style("fill", "#F08460");
+  efficiencyLegend.append('path').attr('d', hexbin.hexagon(5)).attr("transform", "translate(80,110)").style("fill", "#B02B48");
 }
 
 
 function renderShots(data) {
+  d3.selectAll('.legend').transition()
+    .style("opacity", 0).duration(1000).remove();
   shot_g.selectAll(".shape").transition()
-      .style("opacity", 0).duration(1000).remove();
+    .style("opacity", 0).duration(1000).remove();
   var shots = shot_g.selectAll("circle").data(data);
   shots
     .enter()
@@ -281,28 +349,51 @@ function renderShots(data) {
     .attr("fill", "none")
     // .transition()
     // .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
-    .on("mouseover", function(d) {
+    .on("mouseover", function (d) {
 
       div.transition()
-      .duration(100)
-      .style("opacity", .9);
-      div.html("Player: "+d.name+"<br>Shot Type: "+d.actionType+"<br>Date: "+d.date)
-      .style("left", (d3.event.pageX ) + "px")
-      .style("top", (d3.event.pageY - 28) + "px");
+        .duration(100)
+        .style("opacity", .9);
+      div.html("Player: " + d.name + "<br>Shot Type: " + d.actionType + "<br>Date: " + d.date)
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
     })
-    .on("mouseout", function(d) {
-        div.transition()
+    .on("mouseout", function (d) {
+      div.transition()
         .duration(500)
         .style("opacity", 0);
-      })
-      .transition()
-      .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
+    })
+    .transition()
+    .style("opacity", 1).delay(300).duration(1000).ease(d3.easeLinear);
 
 
 
   shots.exit().transition()
-      .style("opacity", 0).duration(1000).attr("d", hexbin.hexagon(0))
-      .remove();
+    .style("opacity", 0).duration(1000).attr("d", hexbin.hexagon(0))
+    .remove();
+
+  var shotLegend = d3.select('court').append("svg").classed('legend', true);
+
+  shotLegend.append("text")
+    .classed('legend-text', true)
+    .attr("x", 60)
+    .attr("y", 100)
+    .attr("text-anchor", "middle")
+    .text("Shot").style("font-size", "15px");
+  shotLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 50)
+    .attr("y", 80)
+    .attr("text-anchor", "end")
+    .text("made").style("font-size", "10px");
+  shotLegend.append("text")
+    .classed("legend-text", true)
+    .attr("x", 70)
+    .attr("y", 80)
+    .attr("text-anchor", "start")
+    .text("missed").style("font-size", "10px");
+  shotLegend.append('circle').attr('r', 5).attr("transform", "translate(40,60)").attr("fill", "none").attr("stroke", "blue");
+  shotLegend.append('circle').attr('r', 5).attr("transform", "translate(82,60)").attr("fill", "none").attr("stroke", "red");
 }
 
 function draw_court() {
@@ -377,7 +468,7 @@ function appendArcPath(base, radius, startAngle, endAngle) {
   var line = d3
     .lineRadial()
     .radius(radius)
-    .angle(function(d, i) {
+    .angle(function (d, i) {
       return angle(i);
     });
 
