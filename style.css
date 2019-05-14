@@ -16,7 +16,7 @@ svg {
     position: relative;
 }
 div.tooltip {
-    position: relative;
+    position: absolute;
     text-align: center;
     width: 200px;
     height: 42px;
